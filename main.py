@@ -1,0 +1,124 @@
+import subprocess
+
+class Sqlmap:
+    def __init__(self, target):
+        self.target = target
+
+    def scan(self, options):
+        try:
+            command = ["sqlmap"] + options.split() + ["-u", self.target]
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            return result.stdout, result.returncode
+        except FileNotFoundError:
+            return "Error: sqlmap not found. Please install sqlmap and try again.\n", 1
+        except subprocess.CalledProcessError as e:
+            return f"Error: {e.stderr}\n", e.returncode
+
+def clear_console():
+    print("\033c", end="")
+
+def get_input(prompt, exit_option="0"):
+    while True:
+        user_input = input(prompt).strip()
+        clear_console()
+        if user_input == exit_option:
+            return None
+        if user_input:
+            return user_input
+        print(f"Invalid input. Please enter a value or press {exit_option} to return.")
+
+def start_scan(helper, options):
+    print("*" * 60)
+    print("Scan starting... please wait.\n")
+    try:
+        result, exit_code = helper.scan(options)
+        print(result)
+        print("*" * 60)
+        print(f"Scan completed with exit code: {exit_code}\n")
+    except KeyboardInterrupt:
+        print("\nScan interrupted. Returning to the main menu...\n")
+
+def display_operations(operations):
+    print("Operations:\n")
+    keys = list(operations.keys())
+    half = len(keys) // 2
+    for i in range(half):
+        key1 = keys[i]
+        key2 = keys[i + half]
+        print(f"  {key1:2}) -> {operations[key1]['description']:35}  {key2:2}) -> {operations[key2]['description']}")
+    print("\n  0) -> QUIT")
+
+def main():
+    ascii_art = """
+  ___  ___  _    __  __   _   ___ _    ___ _____ ___ 
+ / __|/ _ \| |  |  \/  | /_\ | _ \ |  |_ _|_   _| __|
+ \__ \ (_) | |__| |\/| |/ _ \|  _/ |__ | |  | | | _| 
+ |___/\__\_\____|_|  |_/_/ \_\_| |____|___| |_| |___|
+                                                                                   
+by @mikropsoft
+"""
+    print(ascii_art)
+
+    operations = {
+        1:  {"description": "Test for SQL Injection", "command": "--batch"},
+        2:  {"description": "Fingerprint the DBMS", "command": "--fingerprint"},
+        3:  {"description": "List DBMS databases", "command": "--dbs"},
+        4:  {"description": "List DBMS tables", "command": "--tables"},
+        5:  {"description": "List DBMS columns", "command": "--columns"},
+        6:  {"description": "Dump DBMS database table entries", "command": "--dump"},
+        7:  {"description": "Dump DBMS database table entries by condition", "command": "--dump -C column_name -T table_name -D database_name --where"},
+        8:  {"description": "Search for DBMS database names", "command": "--search -D"},
+        9:  {"description": "Search for DBMS table names", "command": "--search -T"},
+        10: {"description": "Search for DBMS column names", "command": "--search -C"},
+        11: {"description": "Check for DBMS privilege", "command": "--privileges"},
+        12: {"description": "Check for DBMS roles", "command": "--roles"},
+        13: {"description": "Check for DBMS user password hashes", "command": "--passwords"},
+        14: {"description": "Test for common issues (WAF/IPS)", "command": "--tamper"},
+        15: {"description": "Enumerate DBMS users", "command": "--users"},
+        16: {"description": "Enumerate DBMS user privileges", "command": "--privileges --users"},
+        17: {"description": "Enumerate DBMS user roles", "command": "--roles --users"},
+        18: {"description": "Enumerate DBMS schema", "command": "--schema"},
+        19: {"description": "Enumerate DBMS system databases", "command": "--system-dbs"},
+        20: {"description": "Enumerate DBMS data", "command": "--data"},
+    }
+
+    while True:
+        try:
+            display_operations(operations)
+            operation_input = get_input("\n> Choose operation: ")
+            if operation_input is None:
+                print("\nExiting the tool. Goodbye!")
+                break
+
+            try:
+                operation = int(operation_input)
+                if operation == 0:
+                    print("\nExiting the tool. Goodbye!")
+                    break
+                if operation not in operations:
+                    print("Invalid operation\n")
+                    continue
+            except ValueError:
+                print("Invalid input. Please enter a number.\n")
+                continue
+
+            print("\n" + "*" * 60)
+            print("Press ctrl + c to close the tool.")
+            target = get_input("\n> Enter the URL to test for SQL injection (Example: http://example.com/index.php?id=1), or enter 0 to return: ")
+            if target is None:
+                continue
+
+            additional_options = get_input("\n> Enter additional options for the scan (leave empty for default): ", exit_option="")
+            if additional_options is None:
+                additional_options = ""
+
+            helper = Sqlmap(target)
+            options = f"{operations[operation]['command']} {additional_options}".strip()
+            start_scan(helper, options)
+
+        except KeyboardInterrupt:
+            print("\nCtrl+C detected. Exiting the tool. Goodbye!\n")
+            break
+
+if __name__ == "__main__":
+    main()
