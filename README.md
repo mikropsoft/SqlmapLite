@@ -67,7 +67,7 @@ To begin utilizing SqlmapLite, follow these simple steps:
 3. **Execute the Script**: Run the main Python script with appropriate permissions.
 
     ```bash
-    python main.py
+    sudo python main.py
     ```
 
 ---
