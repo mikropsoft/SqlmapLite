@@ -1,4 +1,4 @@
-# SqlmapLite: Your Lightweight Sqlmap Command Organizer
+# SqlmapLite - Your Lightweight Sqlmap Command Organizer
 
 SqlmapLite is designed to streamline your experience with Sqlmap by providing a user-friendly menu system. It simplifies the navigation process and enhances accessibility to Sqlmap commands.
 
