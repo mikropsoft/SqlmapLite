@@ -72,4 +72,16 @@ To begin utilizing SqlmapLite, follow these simple steps:
 
 ---
 
-With SqlmapLite, exploring your network and conducting SQL injection scans is now more intuitive and efficient than ever before. Experience the power of Sqlmap with enhanced accessibility and simplicity.
+## Contributing
+
+Contributions are welcome! Please feel free to fork the repository and submit pull requests to contribute new features, improvements, or bug fixes.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<img src="https://raw.githubusercontent.com/matfantinel/matfantinel/master/waves.svg" width="100%" height="100">
