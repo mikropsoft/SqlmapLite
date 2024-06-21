@@ -4,14 +4,13 @@ import os
 import tkinter as tk
 from tkinter import scrolledtext, filedialog, messagebox
 
-
 class Sqlmap:
     def __init__(self, target):
         self.target = target
 
     def scan(self, options, output_file):
         try:
-            command = ["sqlmap"] + options.split() + ["-u", self.target]
+            command = ["sqlmap"] + options.split() + [self.target]
             with open(output_file, "w") as f:
                 result = subprocess.run(command, stdout=f, stderr=subprocess.PIPE, text=True)
             if result.returncode == 0:
@@ -23,67 +22,85 @@ class Sqlmap:
         except FileNotFoundError:
             return "Error: sqlmap not found. Please install sqlmap and try again.\n", 1
 
-
 class SqlmapGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Sqlmap GUI")
+        self.root.geometry("700x500")
 
-        self.target_label = tk.Label(root, text="Target:")
-        self.target_label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
-
-        self.target_entry = tk.Entry(root, width=50)
-        self.target_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-
-        self.options_label = tk.Label(root, text="Options:")
-        self.options_label.grid(row=1, column=0, padx=5, pady=5, sticky="e")
-
-        self.options_entry = tk.Entry(root, width=50)
-        self.options_entry.grid(row=1, column=1, padx=5, pady=5, sticky="w")
-
-        self.scan_button = tk.Button(root, text="Start Scan", command=self.start_scan)
-        self.scan_button.grid(row=2, column=1, padx=5, pady=5, sticky="w")
-
-        self.output_text = scrolledtext.ScrolledText(root, width=80, height=20)
-        self.output_text.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
-
-        self.save_button = tk.Button(root, text="Save Output", command=self.save_output)
-        self.save_button.grid(row=4, column=1, padx=5, pady=5, sticky="e")
+        self.font = ("Inter", 10)
 
         self.operations = {
-            1:  {"description": "Test for SQL Injection", "command": "--batch"},
-            2:  {"description": "Fingerprint the DBMS", "command": "--fingerprint"},
-            3:  {"description": "List DBMS databases", "command": "--dbs"},
-            4:  {"description": "List DBMS tables", "command": "--tables"},
-            5:  {"description": "List DBMS columns", "command": "--columns"},
-            6:  {"description": "Dump DBMS database table entries", "command": "--dump"},
-            7:  {"description": "Dump DBMS database table entries by condition", "command": "--dump -C column_name -T table_name -D database_name --where"},
-            8:  {"description": "Search for DBMS database names", "command": "--search -D"},
-            9:  {"description": "Search for DBMS table names", "command": "--search -T"},
-            10: {"description": "Search for DBMS column names", "command": "--search -C"},
-            11: {"description": "Check for DBMS privilege", "command": "--privileges"},
-            12: {"description": "Check for DBMS roles", "command": "--roles"},
-            13: {"description": "Check for DBMS user password hashes", "command": "--passwords"},
-            14: {"description": "Test for common issues (WAF/IPS)", "command": "--tamper"},
-            15: {"description": "Enumerate DBMS users", "command": "--users"},
-            16: {"description": "Enumerate DBMS user privileges", "command": "--privileges --users"},
-            17: {"description": "Enumerate DBMS user roles", "command": "--roles --users"},
-            18: {"description": "Enumerate DBMS schema", "command": "--schema"},
-            19: {"description": "Enumerate DBMS system databases", "command": "--system-dbs"},
-            20: {"description": "Enumerate DBMS data", "command": "--data"},
+            1: {"description": "Intense Scan", "command": "-T4 -A -v"},
+            2: {"description": "Intense Scan Plus UDP", "command": "-sS -sU -T4 -A -v"},
+            3: {"description": "Intense Scan, All TCP Ports", "command": "-p 1-65535 -T4 -A -v"},
+            4: {"description": "Intense Scan, No Ping", "command": "-T4 -A -v -Pn"},
+            5: {"description": "Ping Scan", "command": "-sn"},
+            6: {"description": "Quick Scan", "command": "-T4 -F"},
+            7: {"description": "Quick Scan Plus", "command": "-sV -T4 -O -F --version-light"},
+            8: {"description": "Quick Traceroute", "command": "-sn --traceroute"},
+            9: {"description": "Regular Scan", "command": ""},
+            10: {"description": "Slow Comprehensive Scan", "command": "-sS -sU -T4 -A -v -PE -PP -PS80,443 -PA3389 -PU40125 -PY -g 53 --script discovery,safe"},
+            11: {"description": "Scan Specific Ports", "command": "-p "},
+            12: {"description": "Service Version Detection", "command": "-sV"},
+            13: {"description": "OS Detection", "command": "-O"},
+            14: {"description": "Aggressive Scan", "command": "-A"},
+            15: {"description": "Detect Firewall", "command": "--script firewall-bypass"},
+            16: {"description": "Scan for Vulnerabilities", "command": "--script vuln"},
+            17: {"description": "Scan for Malware", "command": "--script malware"},
+            18: {"description": "Scan with NSE Scripts", "command": "--script "},
+            19: {"description": "Detect Heartbleed Vulnerability", "command": "--script ssl-heartbleed"},
+            20: {"description": "Traceroute and Geolocation", "command": "--traceroute --script traceroute-geolocation"},
         }
 
-        self.operation_label = tk.Label(root, text="Operation:")
-        self.operation_label.grid(row=5, column=0, padx=5, pady=5, sticky="e")
+        self.create_widgets()
 
-        self.operation_var = tk.StringVar(root)
+    def create_widgets(self):
+        padding = {'padx': 5, 'pady': 5}
+
+        self.target_label = tk.Label(self.root, text="Target:", font=self.font)
+        self.target_label.grid(row=0, column=0, **padding, sticky="e")
+
+        self.target_entry = tk.Entry(self.root, font=self.font)
+        self.target_entry.grid(row=0, column=1, columnspan=3, **padding, sticky="ew")
+
+        self.options_label = tk.Label(self.root, text="Options:", font=self.font)
+        self.options_label.grid(row=1, column=0, **padding, sticky="e")
+
+        self.options_entry = tk.Entry(self.root, font=self.font)
+        self.options_entry.grid(row=1, column=1, columnspan=3, **padding, sticky="ew")
+
+        self.operation_label = tk.Label(self.root, text="Operation:", font=self.font)
+        self.operation_label.grid(row=2, column=0, **padding, sticky="e")
+
+        self.operation_var = tk.StringVar(self.root)
         self.operation_var.set(list(self.operations.values())[0]["description"])
 
-        self.operation_menu = tk.OptionMenu(root, self.operation_var, *[op["description"] for op in self.operations.values()])
-        self.operation_menu.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+        self.operation_menu = tk.OptionMenu(self.root, self.operation_var, *[op["description"] for op in self.operations.values()])
+        self.operation_menu.config(font=self.font)
+        self.operation_menu.grid(row=2, column=1, **padding, sticky="ew")
+
+        self.scan_button = tk.Button(self.root, text="Start Scan", command=self.start_scan, bg="lightgreen", font=self.font)
+        self.scan_button.grid(row=2, column=2, **padding, sticky="ew")
+
+        self.save_button = tk.Button(self.root, text="Save Output", command=self.save_output, bg="lightblue", font=self.font)
+        self.save_button.grid(row=2, column=3, **padding, sticky="ew")
+
+        self.output_text = scrolledtext.ScrolledText(self.root, wrap=tk.WORD, font=self.font)
+        self.output_text.grid(row=3, column=0, columnspan=4, **padding, sticky="nsew")
+
+        # Configure grid columns and rows for resizing
+        self.root.grid_columnconfigure(0, weight=0)
+        for i in range(1, 4):
+            self.root.grid_columnconfigure(i, weight=1)
+        self.root.grid_rowconfigure(3, weight=1)
 
     def start_scan(self):
         target = self.target_entry.get()
+        if not target:
+            messagebox.showerror("Input Error", "Please enter a target.")
+            return
+        
         additional_options = self.options_entry.get()
         selected_operation = self.operation_var.get()
 
@@ -115,7 +132,6 @@ class SqlmapGUI:
                 messagebox.showinfo("Save Output", f"Output saved to {save_path}")
         else:
             messagebox.showwarning("Save Output", "No scan output available to save.")
-
 
 if __name__ == "__main__":
     root = tk.Tk()
