@@ -61,15 +61,15 @@ To begin utilizing SqlmapLite, follow these simple steps:
 2. **Navigate to the Directory**: Move into the SqlmapLite directory.
 
     ```bash
-    cd SqlmapLite
+    cd NmapLite
     ```
 
-3. **Execute the Script**: Run the main Python script with appropriate permissions.
+3. **Execute the Script**: Run the main Python script with elevated privileges.
 
     ```bash
-    python main.py
+    sudo python main.py
     ```
-
+   
 ---
 
 ## Contributing
